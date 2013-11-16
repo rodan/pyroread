@@ -24,19 +24,33 @@
 
 char str_temp[64];
 
-static void do_smth(enum sys_message msg)
-{
-    snprintf(str_temp, 64,"%04d%02d%02d %02d:%02d %d %d %d\r\n",
-            rtca_time.year, rtca_time.mon, rtca_time.day,
-            rtca_time.hour, rtca_time.min, 1 << 1, 1 << 7, 1 << 0
-            );
-    uart1_tx_str(str_temp, strlen(str_temp));
-}
-
 static void parse_pyro(enum sys_message msg)
 {
-    snprintf(str_temp, 64,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\r\n", pyro_rx[0], pyro_rx[1], pyro_rx[2], pyro_rx[3], pyro_rx[4]);
+    uint16_t temp_val=0;
+    uint8_t tmp[5];
+    float temp_f;
+
+    tmp[0] = pyro_rx[0];
+    tmp[1] = pyro_rx[1];
+    tmp[2] = pyro_rx[2];
+    tmp[3] = pyro_rx[3];
+    tmp[4] = pyro_rx[4];
+
+    snprintf(str_temp, 64,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\r\n", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4]);
     uart1_tx_str(str_temp, strlen(str_temp));
+
+    if (((tmp[0] == 0x4c) || (tmp[0] == 0x66)) && (tmp[4] == 0x0d)) {
+        temp_val |= (tmp[1] & 0x0f);
+        temp_val <<= 8;
+        temp_val |= tmp[2];
+        temp_val <<= 4;
+        temp_val |= (tmp[3] & 0xf0) >> 4;
+
+        temp_f = ((PYR_B * temp_val) + PYR_A) * 10.0;
+
+        snprintf(str_temp, 64,"val %u %03d.%01dgC\r\n", temp_val, (uint16_t)temp_f / 10, (uint16_t)temp_f % 10);
+        uart1_tx_str(str_temp, strlen(str_temp));
+    }
 }
 
 int main(void)
