@@ -27,6 +27,17 @@
 //for long lines or very fast MCLK, unremark and set
 #define I2C_MASTER_DDLY		0x02
 
+#define I2C_PYRO_DIR        P1DIR
+#define I2C_PYRO_OUT        P1OUT
+#define I2C_PYRO_IN         P1IN
+#define I2C_PYRO_SCL        BIT0
+#define I2C_PYRO_SDA        BIT1
+
+#define I2C_PYRO_IES        P1IES
+#define I2C_PYRO_IFG        P1IFG
+#define I2C_PYRO_IE         P1IE
+#define I2C_PYRO_SCL_IV     2
+
 #define PS_SLAVE_ADDR       0x28
 #define OUTPUT_MIN          0
 #define OUTPUT_MAX          0x3fff              // 2^14 - 1

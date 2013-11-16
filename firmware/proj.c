@@ -18,66 +18,35 @@
 #include "drivers/timer_a0.h"
 #include "drivers/uart0.h"
 #include "drivers/uart1.h"
+#include "drivers/pyro_bitbang.h"
 #include "drivers/serial_bitbang.h"
 #include "drivers/adc.h"
 
-#define GPSMAX 255
-
 char str_temp[64];
 
-char gps_rx_buf[GPSMAX];
-uint8_t gps_rx_buf_p = 0;
-
-/*
 static void do_smth(enum sys_message msg)
 {
-    snprintf(str_temp, 53,"%04d%02d%02d %02d:%02d\r\n",
+    snprintf(str_temp, 64,"%04d%02d%02d %02d:%02d %d %d %d\r\n",
             rtca_time.year, rtca_time.mon, rtca_time.day,
-            rtca_time.hour, rtca_time.min
+            rtca_time.hour, rtca_time.min, 1 << 1, 1 << 7, 1 << 0
             );
-    uart0_tx_str(str_temp, strlen(str_temp));
     uart1_tx_str(str_temp, strlen(str_temp));
 }
-*/
 
-static void parse_gps(enum sys_message msg)
+static void parse_pyro(enum sys_message msg)
 {
-    /*
-    for (i=0,i<uart0_p;i++) {
-        if (uart0_rx_buf[i] == 0x0a)
-            continue;
-        if (uart0_rx_buf[i] == 0x0d) {
-            uart0_tx_str(gps_rx_buf, gps_rx_buf_p);
-            snprintf(str_temp, 10," _%03d_\r\n", gps_rx_buf_p);
-            uart0_tx_str(str_temp, strlen(str_temp));
-            gps_rx_buf_p = 0;
-        } else {
-            if (gps_rx_buf_p < GPSMAX-1) {
-                gps_rx_buf[gps_rx_buf_p] = uart0_rx_buf;
-                gps_rx_buf_p++;
-            } else {
-                gps_rx_buf_p = 0;
-            }
-        }
-    }
-    */
-    uart0_tx_str(uart0_rx_buf, uart0_p);
-    snprintf(str_temp, 10," _%03d_\r\n", uart0_p);
-    uart0_tx_str(str_temp, strlen(str_temp));
-    uart0_p = 0;
-    uart0_rx_enable = 1;
+    snprintf(str_temp, 64,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\r\n", pyro_rx[0], pyro_rx[1], pyro_rx[2], pyro_rx[3], pyro_rx[4]);
+    uart1_tx_str(str_temp, strlen(str_temp));
 }
 
 int main(void)
 {
     main_init();
-    uart0_init();
     uart1_init();
+    i2c_pyro_init();
 
     //sys_messagebus_register(&do_smth, SYS_MSG_RTC_SECOND);
-
-    // parse GPS output
-    sys_messagebus_register(&parse_gps, SYS_MSG_UART0_RX);
+    sys_messagebus_register(&parse_pyro, SYS_MSG_PYRO_RX);
 
     while (1) {
         sleep();
@@ -237,6 +206,11 @@ void check_events(void)
     if (uart1_last_event == UART1_EV_RX) {
         msg |= BITB;
         uart1_last_event = 0;
+    }
+    // drivers/pyro_bitbang
+    if (pyro_last_event) {
+        msg |= BITC;
+        pyro_last_event = 0;
     }
     while (p) {
         // notify listener if he registered for any of these messages
