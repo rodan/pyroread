@@ -6,6 +6,7 @@
 #define CONFIG_RTC_DST
 #define CONFIG_RTC_DST_ZONE 4
 
+//#define CONFIG_PYRO_MX
 //#define CALIBRATION
 //#define IR_REMOTE
 //#define INTERTECHNO

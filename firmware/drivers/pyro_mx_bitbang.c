@@ -31,7 +31,7 @@ static void parse_pyro_mx(enum sys_message msg)
         temp_val |= tmp[2];
         temp_val <<= 4;
         temp_val |= (tmp[3] & 0xf0) >> 4;
-        temp_f = ((PYR_B * temp_val) + PYR_A) * 10.0;
+        temp_f = ((PYR_MX_B * temp_val) + PYR_MX_A) * 10.0;
         if (tmp[0] == 0x4c) {
             pyro_mx.rem_temp_raw = temp_val;
             pyro_mx.rem_temp_float = temp_f;

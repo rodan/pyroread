@@ -16,7 +16,7 @@ Features:
  - uC can activate new readings on the pyrometer
  - decode i2c-like debug output to retrieve remote and reference temperatures
 
-as development hardware a MSP430-5510STK devboard [1] is used for now.
+as development hardware a MSP430-5510STK devboard [1] is used for now (*)
 
 Pinout:
  - P1.0 - Micronix Plus CLK
@@ -28,5 +28,6 @@ Pinout:
 Power:
  - 3.7v LiPo
 
+(*) R21, R22, R26, R27, R35, C24, C27, C28 have been removed from the board
 [1] https://www.olimex.com/Products/MSP430/Starter/MSP430-5510STK/
 

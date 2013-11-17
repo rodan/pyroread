@@ -18,7 +18,6 @@
 #include "drivers/timer_a0.h"
 #include "drivers/uart0.h"
 #include "drivers/uart1.h"
-#include "drivers/pyro_mx_bitbang.h"
 #include "drivers/serial_bitbang.h"
 #include "drivers/hsc_ssc_i2c.h"
 #include "drivers/sensirion.h"
@@ -26,6 +25,10 @@
 #include "drivers/mmc.h"
 #include "drivers/adc.h"
 #include "drivers/hal_sdcard.h"
+
+#ifdef CONFIG_PYRO_MX
+#include "drivers/pyro_mx_bitbang.h"
+#endif
 
 // DIR is defined as "0x0001 - USB Data Response Bit" in msp430 headers
 // but it's also used by fatfs
@@ -45,9 +48,30 @@ void die(uint8_t loc, FRESULT rc)
 
 static void trigger_measurements(enum sys_message msg)
 {
-    pyro_mx_act_low;
+    uint16_t q_vin = 0;
+    float v_in;
+
+    //pyro_mx_act_low;
+
+    P6SEL |= BIT0;
+    P6DIR &= ~BIT0;
+
+    adc10_read(0, &q_vin, REFVSEL_2);
+    if (q_vin < 613) {
+        adc10_read(0, &q_vin, REFVSEL_0);
+        v_in = q_vin * VREF_1_5_6_0 / 1.023;
+    } else if (q_vin < 818) {
+        adc10_read(0, &q_vin, REFVSEL_1);
+        v_in = q_vin * VREF_2_0_6_0 / 1.023;
+    } else {
+        v_in = q_vin * VREF_2_5_6_0 / 1.023;
+    }
+
+    snprintf(str_temp, 64, "v_in %d %01d.%03d\r\n", q_vin, (uint16_t) v_in / 1000, (uint16_t) v_in % 1000);
+    uart1_tx_str(str_temp, strlen(str_temp));
 }
 
+#ifdef CONFIG_PYRO_MX
 static void display_mx_pyro(enum sys_message msg)
 {
     snprintf(str_temp, 64,"rem %u %03d.%01dgC\r\n", pyro_mx.rem_temp_raw, (uint16_t)pyro_mx.rem_temp_float / 10, (uint16_t)pyro_mx.rem_temp_float % 10);
@@ -56,15 +80,19 @@ static void display_mx_pyro(enum sys_message msg)
     uart1_tx_str(str_temp, strlen(str_temp));
     pyro_mx_act_high;
 }
+#endif
 
 int main(void)
 {
     main_init();
     uart1_init();
-    i2c_pyro_mx_init();
 
-    sys_messagebus_register(&trigger_measurements, SYS_MSG_RTC_MINUTE);
+#ifdef CONFIG_PYRO_MX
+    i2c_pyro_mx_init();
     sys_messagebus_register(&display_mx_pyro, SYS_MSG_PYRO_RDY);
+#endif
+
+    sys_messagebus_register(&trigger_measurements, SYS_MSG_RTC_SECOND);
 
     while (1) {
         sleep();
@@ -225,11 +253,13 @@ void check_events(void)
         msg |= BITB;
         uart1_last_event = 0;
     }
+#ifdef CONFIG_PYRO_MX
     // drivers/pyro_bitbang
     if (pyro_mx_last_event) {
         msg |= pyro_mx_last_event << 12;
         pyro_mx_last_event = 0;
     }
+#endif
     while (p) {
         // notify listener if he registered for any of these messages
         if (msg & p->listens) {
