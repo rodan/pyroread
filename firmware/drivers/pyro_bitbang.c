@@ -8,6 +8,7 @@
 
 
 #include "pyro_bitbang.h"
+#include "timer_a0.h"
 
 // returns one of I2C_OK, I2C_MISSING_SCL_PULLUP and/or I2C_MISSING_SDA_PULLUP
 uint8_t i2c_pyro_init(void)
@@ -35,6 +36,11 @@ void PORT1_ISR(void)
     case I2C_PYRO_SCL_IV:
         // clear IFG
         P1IFG &= ~I2C_PYRO_SCL;
+        if (timer_a0_last_event & TIMER_A0_EVENT_CCR2) {
+            // if no CLK signal is received for 1ms, consider the connection lost
+            timer_a0_last_event &= ~TIMER_A0_EVENT_CCR2;
+            pyro_p = 0;
+        }
         if (pyro_p == 0) {
             pyro_rx[0] = 0;
             pyro_rx[1] = 0;
@@ -46,50 +52,22 @@ void PORT1_ISR(void)
             pyro_rx[pyro_p / 8] |= 1 << (7 - (pyro_p % 8));
         }
         pyro_p++;
+
+        // set up TA0CCR2 for a 1ms trigger
+        // this is kinda like timer_a0_delay_noblk(1000), but it's ISR friendly
+        TA0CCTL2 &= ~CCIE;
+        TA0CCR2 = TA0R + 32; // 1000us/30.51 = 32
+        TA0CCTL2 = 0;
+        TA0CCTL2 = CCIE;
+
+        // one sentence has 8*5 bits
         if (pyro_p == 40) {
             pyro_p = 0;
-            pyro_last_event = I2C_PYRO_SCL_IV;
+            pyro_last_event |= I2C_PYRO_SCL_IV;
             _BIC_SR_IRQ(LPM3_bits);
         }
     default:
         break;
     }
-
-    /*
-    uint16_t iv = UCA0IV;
-    enum uart0_tevent ev = 0;
-    register char rx;
-
-    // iv is 2 for RXIFG, 4 for TXIFG
-    switch (iv) {
-    case 2:
-        rx = UCA0RXBUF;
-        if (uart0_rx_enable && !uart0_rx_err) {
-            if (rx == 0x0a) {
-                return;
-            } else if (rx == 0x0d) {
-                ev = UART0_EV_RX;
-                uart0_rx_enable = 0;
-                uart0_rx_err = 0;
-                _BIC_SR_IRQ(LPM3_bits);
-            } else {
-                uart0_rx_buf[uart0_p] = rx;
-                uart0_p++;
-            }
-        } else {
-            uart0_rx_err++;
-            if (rx == 0x0d) {
-                uart0_rx_err = 0; 
-            }
-        }
-        break;
-    case 4:
-        ev = UART0_EV_TX;
-        break;
-    default:
-        break;
-    }
-    uart0_last_event |= ev;
-    */
 }
 

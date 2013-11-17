@@ -225,6 +225,14 @@ void check_events(void)
         msg |= rtca_last_event;
         rtca_last_event = 0;
     }
+    // drivers/timer0a
+    /*
+    if (timer_a0_last_event & TIMER_A0_EVENT_CCR2) {
+        // if no CLK signal is received for 1ms, consider the connection lost
+        timer_a0_last_event &= ~TIMER_A0_EVENT_CCR2;
+        pyro_p = 0;
+    }
+    */
     // drivers/timer1a
     if (timer_a1_last_event) {
         msg |= timer_a1_last_event << 7;
