@@ -1,7 +1,10 @@
 
- read temperatures from a small micronix pyrometer via it's debug interface
+ collection of software that interfaces different types of pyrometers to a msp430 uC
 
- UNDER DEVELOPMENT, FAR FROM BEING READY
+ supported devices:
+  - pocket Micronix Plus pyrometer (via it's debug interface)
+  - Raytek Thermalert MI (via mV output) (not implemented yet)
+  - Raytek PM Plus (not implemented yet)
 
  source:       https://github.com/rodan/pyroread
  author:       Petre Rodan <petre.rodan@simplex.ro>

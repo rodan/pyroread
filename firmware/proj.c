@@ -20,9 +20,28 @@
 #include "drivers/uart1.h"
 #include "drivers/pyro_bitbang.h"
 #include "drivers/serial_bitbang.h"
+#include "drivers/hsc_ssc_i2c.h"
+#include "drivers/sensirion.h"
+#include "drivers/diskio.h"
+#include "drivers/mmc.h"
 #include "drivers/adc.h"
+#include "drivers/hal_sdcard.h"
+
+// DIR is defined as "0x0001 - USB Data Response Bit" in msp430 headers
+// but it's also used by fatfs
+#undef DIR
+#include "fatfs/ff.h"
 
 char str_temp[64];
+FATFS fatfs;
+DIR dir;
+FIL f;
+
+void die(uint8_t loc, FRESULT rc)
+{
+    sprintf(str_temp, "l=%d rc=%u\r\n", loc, rc);
+    uart1_tx_str(str_temp, strlen(str_temp));
+}
 
 static void parse_pyro(enum sys_message msg)
 {
