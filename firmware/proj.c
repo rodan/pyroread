@@ -18,7 +18,7 @@
 #include "drivers/timer_a0.h"
 #include "drivers/uart0.h"
 #include "drivers/uart1.h"
-#include "drivers/pyro_bitbang.h"
+#include "drivers/pyro_mx_bitbang.h"
 #include "drivers/serial_bitbang.h"
 #include "drivers/hsc_ssc_i2c.h"
 #include "drivers/sensirion.h"
@@ -43,43 +43,28 @@ void die(uint8_t loc, FRESULT rc)
     uart1_tx_str(str_temp, strlen(str_temp));
 }
 
-static void parse_pyro(enum sys_message msg)
+static void trigger_measurements(enum sys_message msg)
 {
-    uint16_t temp_val=0;
-    uint8_t tmp[5];
-    float temp_f;
+    pyro_mx_act_low;
+}
 
-    tmp[0] = pyro_rx[0];
-    tmp[1] = pyro_rx[1];
-    tmp[2] = pyro_rx[2];
-    tmp[3] = pyro_rx[3];
-    tmp[4] = pyro_rx[4];
-
-    snprintf(str_temp, 64,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\r\n", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4]);
+static void display_mx_pyro(enum sys_message msg)
+{
+    snprintf(str_temp, 64,"rem %u %03d.%01dgC\r\n", pyro_mx.rem_temp_raw, (uint16_t)pyro_mx.rem_temp_float / 10, (uint16_t)pyro_mx.rem_temp_float % 10);
     uart1_tx_str(str_temp, strlen(str_temp));
-
-    if (((tmp[0] == 0x4c) || (tmp[0] == 0x66)) && (tmp[4] == 0x0d)) {
-        temp_val |= (tmp[1] & 0x0f);
-        temp_val <<= 8;
-        temp_val |= tmp[2];
-        temp_val <<= 4;
-        temp_val |= (tmp[3] & 0xf0) >> 4;
-
-        temp_f = ((PYR_B * temp_val) + PYR_A) * 10.0;
-
-        snprintf(str_temp, 64,"val %u %03d.%01dgC\r\n", temp_val, (uint16_t)temp_f / 10, (uint16_t)temp_f % 10);
-        uart1_tx_str(str_temp, strlen(str_temp));
-    }
+    snprintf(str_temp, 64,"ref %u %03d.%01dgC\r\n", pyro_mx.ref_temp_raw, (uint16_t)pyro_mx.ref_temp_float / 10, (uint16_t)pyro_mx.ref_temp_float % 10);
+    uart1_tx_str(str_temp, strlen(str_temp));
+    pyro_mx_act_high;
 }
 
 int main(void)
 {
     main_init();
     uart1_init();
-    i2c_pyro_init();
+    i2c_pyro_mx_init();
 
-    //sys_messagebus_register(&do_smth, SYS_MSG_RTC_SECOND);
-    sys_messagebus_register(&parse_pyro, SYS_MSG_PYRO_RX);
+    sys_messagebus_register(&trigger_measurements, SYS_MSG_RTC_MINUTE);
+    sys_messagebus_register(&display_mx_pyro, SYS_MSG_PYRO_RDY);
 
     while (1) {
         sleep();
@@ -225,14 +210,6 @@ void check_events(void)
         msg |= rtca_last_event;
         rtca_last_event = 0;
     }
-    // drivers/timer0a
-    /*
-    if (timer_a0_last_event & TIMER_A0_EVENT_CCR2) {
-        // if no CLK signal is received for 1ms, consider the connection lost
-        timer_a0_last_event &= ~TIMER_A0_EVENT_CCR2;
-        pyro_p = 0;
-    }
-    */
     // drivers/timer1a
     if (timer_a1_last_event) {
         msg |= timer_a1_last_event << 7;
@@ -249,9 +226,9 @@ void check_events(void)
         uart1_last_event = 0;
     }
     // drivers/pyro_bitbang
-    if (pyro_last_event) {
-        msg |= BITC;
-        pyro_last_event = 0;
+    if (pyro_mx_last_event) {
+        msg |= pyro_mx_last_event << 12;
+        pyro_mx_last_event = 0;
     }
     while (p) {
         // notify listener if he registered for any of these messages

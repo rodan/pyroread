@@ -27,6 +27,8 @@
 //for long lines or very fast MCLK, unremark and set
 #define I2C_MASTER_DDLY		0x02
 
+//  Micronix Plus pocket pyrometer
+
 #define I2C_PYRO_DIR        P1DIR
 #define I2C_PYRO_OUT        P1OUT
 #define I2C_PYRO_IN         P1IN
@@ -37,6 +39,12 @@
 #define I2C_PYRO_IFG        P1IFG
 #define I2C_PYRO_IE         P1IE
 #define I2C_PYRO_SCL_IV     2
+
+#define PYRO_MX_DIR         P1DIR
+#define PYRO_MX_OUT         P1OUT
+#define PYRO_MX_ACT         BIT2
+
+// 
 
 #define PS_SLAVE_ADDR       0x28
 #define OUTPUT_MIN          0

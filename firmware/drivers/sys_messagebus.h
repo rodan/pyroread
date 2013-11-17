@@ -25,7 +25,8 @@ enum sys_message {
     // UARTs
     SYS_MSG_UART0_RX = BITA,
     SYS_MSG_UART1_RX = BITB,
-    SYS_MSG_PYRO_RX = BITC
+    SYS_MSG_PYRO_RX = BITC,
+    SYS_MSG_PYRO_RDY = BITD
 };
 
 /*!
