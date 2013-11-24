@@ -14,13 +14,8 @@
 #include "drivers/sys_messagebus.h"
 #include "drivers/pmm.h"
 #include "drivers/rtc.h"
-#include "drivers/timer_a1.h"
 #include "drivers/timer_a0.h"
-#include "drivers/uart0.h"
 #include "drivers/uart1.h"
-#include "drivers/serial_bitbang.h"
-#include "drivers/hsc_ssc_i2c.h"
-#include "drivers/sensirion.h"
 #include "drivers/diskio.h"
 #include "drivers/mmc.h"
 #include "drivers/adc.h"
@@ -255,16 +250,6 @@ void check_events(void)
     if (rtca_last_event) {
         msg |= rtca_last_event;
         rtca_last_event = 0;
-    }
-    // drivers/timer1a
-    if (timer_a1_last_event) {
-        msg |= timer_a1_last_event << 7;
-        timer_a1_last_event = 0;
-    }
-    // drivers/uart0
-    if (uart0_last_event == UART0_EV_RX) {
-        msg |= BITA;
-        uart0_last_event = 0;
     }
     // drivers/uart1
     if (uart1_last_event == UART1_EV_RX) {

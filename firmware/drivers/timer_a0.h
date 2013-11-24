@@ -18,5 +18,4 @@ void timer_a0_halt(void);
 void timer_a0_delay(uint32_t microseconds);
 void timer_a0_delay_noblk(uint32_t microseconds);
 
-
 #endif
