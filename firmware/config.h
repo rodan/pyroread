@@ -8,7 +8,5 @@
 
 //#define CONFIG_PYRO_MX
 //#define CALIBRATION
-//#define IR_REMOTE
-//#define INTERTECHNO
 
 #endif

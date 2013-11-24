@@ -48,14 +48,15 @@ void die(uint8_t loc, FRESULT rc)
 
 static void trigger_measurements(enum sys_message msg)
 {
-    uint16_t q_vin = 0;
-    float v_in;
+    uint16_t q_vin = 0, q_vin2 = 0, q_vin3 = 0;
+    float v_in = 0, v_in2 = 0, v_in3 = 0;
 
     //pyro_mx_act_low;
 
     P6SEL |= BIT0;
     P6DIR &= ~BIT0;
 
+    /*
     adc10_read(0, &q_vin, REFVSEL_2);
     if (q_vin < 613) {
         adc10_read(0, &q_vin, REFVSEL_0);
@@ -66,9 +67,26 @@ static void trigger_measurements(enum sys_message msg)
     } else {
         v_in = q_vin * VREF_2_5_6_0 / 1.023;
     }
+    */
 
-    snprintf(str_temp, 64, "v_in %d %01d.%03d\r\n", q_vin, (uint16_t) v_in / 1000, (uint16_t) v_in % 1000);
+    adc10_read(0, &q_vin, REFVSEL_2);
+    v_in = q_vin * VREF_2_5_6_0 / 1.023;
+
+    adc10_read(0, &q_vin2, REFVSEL_1);
+    v_in2 = q_vin2 * VREF_2_0_6_0 / 1.023;
+
+    adc10_read(0, &q_vin3, REFVSEL_0);
+    v_in3 = q_vin3 * VREF_1_5_6_0 / 1.023;
+
+   
+
+    snprintf(str_temp, 63, "v_in  %d %01d.%03d\r\n", q_vin, (uint16_t) v_in / 1000, (uint16_t) v_in % 1000);
     uart1_tx_str(str_temp, strlen(str_temp));
+    snprintf(str_temp, 63, "v_in2 %d %01d.%03d\r\n", q_vin2, (uint16_t) v_in2 / 1000, (uint16_t) v_in2 % 1000);
+    uart1_tx_str(str_temp, strlen(str_temp));
+    snprintf(str_temp, 63, "v_in3 %d %01d.%03d\r\n", q_vin3, (uint16_t) v_in3 / 1000, (uint16_t) v_in3 % 1000);
+    uart1_tx_str(str_temp, strlen(str_temp));
+    uart1_tx_str("\r\n",3);
 }
 
 #ifdef CONFIG_PYRO_MX
