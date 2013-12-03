@@ -2,7 +2,7 @@
 //  software bitbang of serial protocols
 //  library that decodes Micronix Plus pocket pyrometer's debug i2c-like output
 //
-//  see the inclosed micronix_pyrometer.decode file for details
+//  see the enclosed micronix_pyrometer.decode file for details
 //
 //  author:          Petre Rodan <petre.rodan@simplex.ro>
 //  available from:  https://github.com/rodan/
