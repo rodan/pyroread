@@ -16,29 +16,29 @@
 #define OOK_OUT             P1OUT
 #define OOK_PIN             BIT1
 
-#define I2C_MASTER_DIR      P6DIR
-#define I2C_MASTER_OUT      P6OUT
-#define I2C_MASTER_IN       P6IN
+#define SSI_MASTER_DIR      P6DIR
+#define SSI_MASTER_OUT      P6OUT
+#define SSI_MASTER_IN       P6IN
 //port pins
-#define I2C_MASTER_SCL      BIT2
-#define I2C_MASTER_SDA      BIT3
+#define SSI_MASTER_SCL      BIT2
+#define SSI_MASTER_SDA      BIT3
 //Start and Stop delay, most devices need this
-#define I2C_MASTER_SDLY		0x01
+#define SSI_MASTER_SDLY		0x01
 //for long lines or very fast MCLK, unremark and set
-#define I2C_MASTER_DDLY		0x02
+#define SSI_MASTER_DDLY		0x02
 
 //  Micronix Plus pocket pyrometer
 
-#define I2C_PYRO_DIR        P1DIR
-#define I2C_PYRO_OUT        P1OUT
-#define I2C_PYRO_IN         P1IN
-#define I2C_PYRO_SCL        BIT0
-#define I2C_PYRO_SDA        BIT1
+#define SSI_PYRO_DIR        P1DIR
+#define SSI_PYRO_OUT        P1OUT
+#define SSI_PYRO_IN         P1IN
+#define SSI_PYRO_SCL        BIT0
+#define SSI_PYRO_SDA        BIT1
 
-#define I2C_PYRO_IES        P1IES
-#define I2C_PYRO_IFG        P1IFG
-#define I2C_PYRO_IE         P1IE
-#define I2C_PYRO_SCL_IV     2
+#define SSI_PYRO_IES        P1IES
+#define SSI_PYRO_IFG        P1IFG
+#define SSI_PYRO_IE         P1IE
+#define SSI_PYRO_SCL_IV     2
 
 #define PYRO_MX_DIR         P1DIR
 #define PYRO_MX_OUT         P1OUT

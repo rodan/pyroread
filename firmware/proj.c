@@ -280,6 +280,6 @@ void opt_power_enable()
 void opt_power_disable()
 {
     P1OUT |= BIT6;
-    I2C_MASTER_DIR &= ~(I2C_MASTER_SCL + I2C_MASTER_SDA);
+    SSI_MASTER_DIR &= ~(SSI_MASTER_SCL + SSI_MASTER_SDA);
 }
 
