@@ -2,7 +2,7 @@
 //  sensor control board based on a MSP430F5510 uC
 //   - compatible with hardware rev 03 -
 //
-//  author:          Petre Rodan <petre.rodan@simplex.ro>
+//  author:          Petre Rodan <2b4eda@subdimension.ro>
 //  available from:  https://github.com/rodan/
 //  license:         GNU GPLv3
 
